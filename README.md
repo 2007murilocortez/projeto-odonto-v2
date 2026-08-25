@@ -40,9 +40,19 @@ Ordene as quatro etapas de cada cadeia arrastando os cartões da bandeja para os
 Verifique a conexão; a partir do segundo erro, uma dica aparece sem entregar a resposta.
 São quatro cadeias (DPOC e AOS, ida e volta) e um quiz final; “Jogar novamente” recomeça a sessão.
 
+Após cada acerto, o overlay da animação avança sozinho; a tela de contexto espera o botão **Continuar**. Termos do glossário (primeira ocorrência por tela) e a nota científica do rodapé da abertura abrem em popover, por toque ou clique. O encerramento recapitula as quatro cadeias, inclui a nota completa e oferece **Referências** (`src/data/references.ts`).
+
+## Textos clínicos e placeholders
+
+- Contexto pós-acerto e glossário: edite só `src/data/education.ts`.
+- Afiliação na abertura: `affiliation` em `src/data/screens.ts` (`{{DISCIPLINA}} · {{INSTITUIÇÃO}} · {{AUTORA}}`).
+- Bibliografia: `src/data/references.ts`.
+
 ## Acessibilidade
 
-O jogo é jogável só com teclado (Tab, Espaço, setas e Esc). No mobile há toque-para-colocar. Com `prefers-reduced-motion: reduce`, animações são substituídas por estados finais e o avanço deixa de ser automático.
+O jogo é jogável só com teclado (Tab, Espaço, setas e Esc). No mobile há toque-para-colocar. Popovers (dica, glossário, nota científica) nunca abrem por hover: Enter ou Espaço abre, Esc fecha, o foco volta ao gatilho.
+
+Com `prefers-reduced-motion: reduce`, animações são substituídas por estados finais e o overlay de acerto pede **Avançar** em vez de avançar sozinho. A tela de contexto pós-acerto espera **Continuar** com ou sem reduced-motion.
 
 ## Estrutura de pastas
 
