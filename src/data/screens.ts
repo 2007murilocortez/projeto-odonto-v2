@@ -13,6 +13,8 @@ export const openingScreen: OpeningScreen = {
   title: 'Doença periodontal × doenças respiratórias',
   subtitle: 'Aprenda na prática como a inflamação da boca conversa com o restante do corpo.',
   body: 'Você vai montar quatro cadeias de eventos. Em cada uma, arraste as etapas até formar o caminho correto.',
+  // Preencher os placeholders; a abertura renderiza a string como está.
+  affiliation: '{{DISCIPLINA}} · {{INSTITUIÇÃO}} · {{AUTORA}}',
   cta: 'Começar',
 };
 
@@ -219,3 +221,7 @@ export const ACRONYM_EXPANSIONS = {
 /** Nota de contexto científico — seção 13, rodapé da tela de encerramento. */
 export const SCIENTIFIC_NOTE =
   'Conteúdo educativo. As cadeias apresentadas descrevem mecanismos de plausibilidade biológica e associações descritas na literatura — não estabelecem relação de causa e efeito individual. Não substitui avaliação clínica.';
+
+/** Uma linha no rodapé da abertura; o texto completo está em SCIENTIFIC_NOTE. */
+export const SCIENTIFIC_NOTE_SUMMARY =
+  'Conteúdo educativo: plausibilidade biológica e associações na literatura, não causa e efeito individual.';
