@@ -26,9 +26,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const variantClass =
     variant === 'primary'
       ? isDisabled
-        ? 'rounded-md px-5 py-3 bg-line text-ink-disabled cursor-not-allowed'
-        : 'rounded-md px-5 py-3 bg-oxigenio text-noite'
-      : 'bg-transparent px-0 py-0 text-ink-muted hover:underline';
+        ? 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-line text-ink-disabled cursor-not-allowed'
+        : 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-oxigenio text-noite'
+      : 'inline-flex min-h-11 min-w-11 items-center justify-center bg-transparent px-3 py-0 text-ink-muted hover:underline';
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
     if (isDisabled) {

@@ -17,11 +17,11 @@ export function PhaseInterstitial({ phase }: PhaseInterstitialProps) {
   }, []);
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-noite px-6 text-ink">
+    <main className="app-shell flex items-center justify-center bg-noite text-ink">
       <p
         ref={headingRef}
         tabIndex={-1}
-        className="animate-success-in text-center font-display text-display-lg uppercase outline-none"
+        className="animate-success-in px-2 text-center font-display text-display-lg uppercase outline-none"
         style={{ letterSpacing: 'var(--tracking-equation)' }}
       >
         {COPY[phase]}

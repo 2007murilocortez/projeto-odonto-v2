@@ -240,7 +240,7 @@ export function PathwayAnimation({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 flex items-center justify-center px-4"
+      className="fixed inset-0 z-40 flex max-h-dvh items-center justify-center overflow-y-auto pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]"
       style={{ backgroundColor: 'var(--backdrop)' }}
       role="dialog"
       aria-modal="true"
@@ -252,10 +252,10 @@ export function PathwayAnimation({
         onInterrupt?.();
       }}
     >
-      <div className="flex w-full max-w-content flex-col items-center gap-5">
+      <div className="flex w-full max-w-content flex-col items-center gap-3 md:gap-5">
         <svg
           viewBox={viewBox}
-          className="w-full text-ink"
+          className="w-full max-h-[42dvh] text-ink md:max-h-none"
           role="img"
           aria-label={ariaFor(pathway)}
         >

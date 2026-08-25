@@ -20,7 +20,7 @@ export function Toast({ message, tone, onDismiss }: ToastProps) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-6 left-1/2 z-50 w-[min(92vw,28rem)] -translate-x-1/2 rounded-md bg-tecido-alto px-4 py-3 font-body text-card text-ink shadow-lift"
+      className="fixed left-1/2 z-50 w-[min(92vw,28rem)] -translate-x-1/2 rounded-md bg-tecido-alto px-4 py-3 font-body text-card text-ink shadow-lift bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
       style={{ borderLeft: `3px solid ${borderColor}` }}
     >
       {message}

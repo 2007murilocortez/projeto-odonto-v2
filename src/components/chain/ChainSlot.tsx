@@ -36,7 +36,7 @@ export function ChainSlot({
       aria-label={ariaLabel}
       onClick={onPlace}
       className={[
-        'relative min-h-[72px] rounded-md border border-dashed p-1 transition-colors',
+        'relative min-h-11 rounded-md border border-dashed p-1 transition-colors md:min-h-[72px]',
         isRefused ? 'animate-refuse-pulse' : '',
         isOver && isLocked
           ? 'border-line bg-tecido'
@@ -48,7 +48,7 @@ export function ChainSlot({
         .join(' ')}
     >
       {isEmpty ? (
-        <div className="flex min-h-[72px] items-center gap-3 px-3 py-3">
+        <div className="flex min-h-11 items-center gap-2 px-3 py-2 md:min-h-[72px] md:gap-3 md:py-3">
           <span className="font-mono text-caption text-ink-muted">
             {String(position).padStart(2, '0')}
           </span>

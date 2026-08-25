@@ -53,8 +53,8 @@ export function QuizScreen({ screen, onAnswer, onComplete }: QuizScreenProps) {
   const locked = status === 'right';
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center bg-noite px-6 py-12 text-ink">
-      <div className="flex w-full max-w-xl flex-col gap-6">
+    <main className="app-shell flex flex-col items-center justify-center bg-noite text-ink">
+      <div className="flex w-full max-w-xl flex-col gap-4 md:gap-6">
         <p className="font-mono text-caption uppercase text-ink-muted">{screen.eyebrow}</p>
         <h1
           ref={headingRef}
@@ -79,7 +79,7 @@ export function QuizScreen({ screen, onAnswer, onComplete }: QuizScreenProps) {
                 onClick={() => choose(option.id)}
                 aria-disabled={locked || undefined}
                 aria-pressed={selected}
-                className={`flex gap-4 rounded-md border bg-tecido px-5 py-4 text-left font-body text-card ${border} ${locked ? 'pointer-events-none' : ''}`}
+                className={`flex min-h-11 items-center gap-3 rounded-md border bg-tecido px-4 py-3 text-left font-body text-card md:gap-4 md:px-5 md:py-4 ${border} ${locked ? 'pointer-events-none' : ''}`}
               >
                 <span className="font-mono text-caption text-ink-muted">{option.id}</span>
                 <span>{option.label}</span>

@@ -30,13 +30,13 @@
   --font-body:    'Inter Tight', ui-sans-serif, system-ui, sans-serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
-  /* escala tipográfica — seção 9.3 */
-  --type-display-lg: clamp(2rem, 4.5vw, 3.25rem);  /* line-height 1.05, wght 600, tracking -0.02em */
-  --type-display:    clamp(1.5rem, 3vw, 2rem);
-  --type-equation:   clamp(1.05rem, 2.2vw, 1.6rem); /* uppercase, tracking 0.06em */
-  --type-card:       1rem;                          /* line-height 1.45 */
-  --type-body:       1.0625rem;
-  --type-caption:    0.8125rem;                     /* uppercase, tracking 0.09em, mono */
+  /* escala tipográfica — seção 9.3; mínimos calibrados para 360px */
+  --type-display-lg: clamp(1.75rem, 4vw + 0.85rem, 3.25rem);  /* 28px em 360 */
+  --type-display:    clamp(1.3125rem, 2.5vw + 0.7rem, 2rem);  /* 21px em 360 */
+  --type-equation:   clamp(1.0625rem, 1.5vw + 0.7rem, 1.6rem); /* 17px em 360 */
+  --type-card:       0.875rem;                                 /* 14px; 16px a partir de 768 */
+  --type-body:       1rem;                                     /* 16px; 17px a partir de 768 */
+  --type-caption:    0.75rem;                                  /* 12px; 13px a partir de 768 */
 
   --leading-display: 1.05;
   --leading-card:    1.45;
@@ -65,4 +65,12 @@
 
   /* largura máxima do layout de cadeia — seção 6.1 */
   --content-max: 1120px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --type-card:    1rem;
+    --type-body:    1.0625rem;
+    --type-caption: 0.8125rem;
+  }
 }

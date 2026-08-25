@@ -32,11 +32,11 @@ export function EquationHeader({
   return (
     <header ref={headerRef} tabIndex={-1} className="text-center outline-none">
       <p
-        className="font-display text-equation uppercase text-ink"
+        className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-display text-equation uppercase text-ink md:gap-x-3"
         style={{ letterSpacing: 'var(--tracking-equation)' }}
       >
         <span>{left}</span>
-        <span className="mx-3 text-ink-muted" aria-hidden>
+        <span className="text-ink-muted" aria-hidden>
           →
         </span>
         <span
@@ -49,15 +49,19 @@ export function EquationHeader({
             .join(' ')}
           aria-label={complete ? 'conexão formada' : 'posição a descobrir'}
         >
-          {complete ? <Link2 size={28} strokeWidth={1.75} aria-hidden /> : '?'}
+          {complete ? (
+            <Link2 className="h-[1.15em] w-[1.15em] md:h-7 md:w-7" strokeWidth={1.75} aria-hidden />
+          ) : (
+            '?'
+          )}
         </span>
-        <span className="mx-3 text-ink-muted" aria-hidden>
+        <span className="text-ink-muted" aria-hidden>
           →
         </span>
         <span>{right}</span>
       </p>
       {expansion ? (
-        <p className="mt-2 font-mono text-caption uppercase text-ink-muted">{expansion}</p>
+        <p className="mt-1 font-mono text-caption uppercase text-ink-muted md:mt-2">{expansion}</p>
       ) : null}
     </header>
   );

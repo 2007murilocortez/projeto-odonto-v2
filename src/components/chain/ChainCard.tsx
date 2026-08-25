@@ -55,7 +55,7 @@ export function ChainCard({
   }
 
   const className = [
-    'flex w-full min-h-[72px] items-start gap-3 rounded-md border px-4 py-4 text-left font-body text-card',
+    'flex w-full min-h-11 items-center gap-2 rounded-md border px-3 py-2 text-left font-body text-card md:min-h-[72px] md:items-start md:gap-3 md:px-4 md:py-4',
     'select-none',
     isSuccess
       ? 'border-oxigenio'

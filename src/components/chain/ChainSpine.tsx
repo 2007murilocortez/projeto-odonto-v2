@@ -6,7 +6,7 @@ type ChainSpineProps = {
 export function ChainSpine({ filled, reducedMotion }: ChainSpineProps) {
   return (
     <svg
-      className="pointer-events-none absolute bottom-4 left-2 top-4 w-2"
+      className="pointer-events-none absolute bottom-2 left-2 top-2 w-2 md:bottom-4 md:top-4"
       viewBox="0 0 8 400"
       preserveAspectRatio="none"
       aria-hidden

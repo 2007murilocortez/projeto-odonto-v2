@@ -11,7 +11,7 @@
 
   body {
     margin: 0;
-    min-height: 100svh;
+    min-height: 100dvh;
     background-color: var(--noite);
     color: var(--ink);
     font-family: var(--font-body);
@@ -24,12 +24,63 @@
   }
 
   #root {
-    min-height: 100svh;
+    min-height: 100dvh;
   }
 
   :focus-visible {
     outline: 2px solid var(--placa);
     outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .app-shell {
+    min-height: 100dvh;
+    padding-top: max(var(--space-6), env(safe-area-inset-top));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
+    padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+  }
+
+  .app-shell-chain {
+    min-height: 100dvh;
+    padding-top: max(var(--space-2), env(safe-area-inset-top));
+    padding-right: max(var(--space-3), env(safe-area-inset-right));
+    padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
+    padding-left: max(var(--space-3), env(safe-area-inset-left));
+  }
+
+  @media (max-width: 767px) {
+    .app-shell-chain {
+      max-height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .app-shell {
+      padding-top: max(var(--space-12), env(safe-area-inset-top));
+      padding-right: max(var(--space-6), env(safe-area-inset-right));
+      padding-bottom: max(var(--space-12), env(safe-area-inset-bottom));
+      padding-left: max(var(--space-6), env(safe-area-inset-left));
+    }
+
+    .app-shell-chain {
+      padding-top: max(var(--space-6), env(safe-area-inset-top));
+      padding-right: max(var(--space-4), env(safe-area-inset-right));
+      padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+      padding-left: max(var(--space-4), env(safe-area-inset-left));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .app-shell-chain {
+      padding-top: max(var(--space-8), env(safe-area-inset-top));
+      padding-right: max(var(--space-8), env(safe-area-inset-right));
+      padding-bottom: max(var(--space-8), env(safe-area-inset-bottom));
+      padding-left: max(var(--space-8), env(safe-area-inset-left));
+    }
   }
 }
 
