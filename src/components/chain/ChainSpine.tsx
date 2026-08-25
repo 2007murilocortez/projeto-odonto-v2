@@ -1,31 +1,24 @@
 type ChainSpineProps = {
   filled: boolean;
   reducedMotion: boolean;
+  top: number;
+  bottom: number;
 };
 
-export function ChainSpine({ filled, reducedMotion }: ChainSpineProps) {
+export function ChainSpine({ filled, reducedMotion, top, bottom }: ChainSpineProps) {
   return (
-    <svg
-      className="pointer-events-none absolute bottom-2 left-2 top-2 w-2 md:bottom-4 md:top-4"
-      viewBox="0 0 8 400"
-      preserveAspectRatio="none"
+    <div
+      className="pointer-events-none absolute left-[0.625rem] w-[2px] bg-line md:left-4"
+      style={{ top, bottom }}
       aria-hidden
     >
-      <line x1="4" y1="0" x2="4" y2="400" stroke="var(--line)" strokeWidth="2" />
-      <line
-        x1="4"
-        y1="0"
-        x2="4"
-        y2="400"
-        stroke="var(--oxigenio)"
-        strokeWidth="2"
-        pathLength={1}
-        strokeDasharray={1}
-        strokeDashoffset={filled ? 0 : 1}
+      <div
+        className="h-full w-full origin-top bg-oxigenio"
         style={{
-          transition: reducedMotion ? 'none' : 'stroke-dashoffset 700ms var(--ease-out)',
+          transform: filled ? 'scaleY(1)' : 'scaleY(0)',
+          transition: reducedMotion ? 'none' : 'transform 700ms var(--ease-out)',
         }}
       />
-    </svg>
+    </div>
   );
 }

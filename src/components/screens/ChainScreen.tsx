@@ -2,14 +2,21 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCorners,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { Announcements, DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+import type {
+  Announcements,
+  DragEndEvent,
+  DragOverEvent,
+  DragPendingEvent,
+  DragStartEvent,
+} from '@dnd-kit/core';
 import { chainKeyboardCoordinates } from '../../utils/chainKeyboardCoordinates';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import type { ChainScreen as ChainScreenContent, ChainStep } from '../../types/game';
 import {
@@ -108,6 +115,9 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
   const onCompleteRef = useRef(onComplete);
   const finishedRef = useRef(false);
   const [manualAdvance, setManualAdvance] = useState(false);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const suppressSelectRef = useRef(false);
+  const suppressSelectTimer = useRef(0);
 
   const filled = board.slots.every((id) => id !== null);
   const isSuccess = status === 'success';
@@ -117,7 +127,8 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
   }
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: chainKeyboardCoordinates }),
   );
 
@@ -235,8 +246,25 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
     setBoard((current) => moveCard(current, cardId, dest, lockedRef.current));
   }
 
+  function suppressNextSelect() {
+    suppressSelectRef.current = true;
+    window.clearTimeout(suppressSelectTimer.current);
+    suppressSelectTimer.current = window.setTimeout(() => {
+      suppressSelectRef.current = false;
+    }, 50);
+  }
+
+  function handleDragPending(event: DragPendingEvent) {
+    setPendingId(String(event.id));
+  }
+
+  function handleDragAbort() {
+    setPendingId(null);
+  }
+
   function handleDragStart(event: DragStartEvent) {
     draggingRef.current = true;
+    setPendingId(null);
     setActiveId(String(event.active.id));
     setSelectedId(null);
   }
@@ -247,6 +275,8 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
 
   function handleDragEnd(event: DragEndEvent) {
     draggingRef.current = false;
+    suppressNextSelect();
+    setPendingId(null);
     setActiveId(null);
     setOverId(null);
     const over = event.over;
@@ -262,11 +292,14 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
 
   function handleDragCancel() {
     draggingRef.current = false;
+    suppressNextSelect();
+    setPendingId(null);
     setActiveId(null);
     setOverId(null);
   }
 
   function handleSelect(cardId: string) {
+    if (suppressSelectRef.current) return;
     if (isSuccess || lockedIds.has(cardId)) return;
     if (selectedId === cardId) {
       setSelectedId(null);
@@ -287,7 +320,7 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
     setSelectedId(cardId);
     const label = stepsById.get(cardId)?.label ?? '';
     setLiveMessage(
-      `Cartão ${label} selecionado. Clique em uma posição da corrente para colocá-lo.`,
+      `Cartão ${label} selecionado. Toque em uma posição da corrente para colocá-lo.`,
     );
   }
 
@@ -373,6 +406,44 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
   const showHintLink = attempts >= 2 && !isSuccess;
   const hintText = hintVisible && frozenHint?.hint ? frozenHint.hint : null;
   const educationId = screen.id as ChainEducationId;
+  const showTray =
+    board.tray.length > 0 ||
+    Boolean(activeId) ||
+    (selectedId !== null && board.slots.includes(selectedId));
+  const trackRef = useRef<HTMLDivElement>(null);
+  const firstSlotRef = useRef<HTMLLIElement>(null);
+  const lastSlotRef = useRef<HTMLLIElement>(null);
+  const [spineInset, setSpineInset] = useState({ top: 0, bottom: 0 });
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    const first = firstSlotRef.current;
+    const last = lastSlotRef.current;
+    if (!track || !first || !last) return undefined;
+
+    function update() {
+      if (!track || !first || !last) return;
+      const bounds = track.getBoundingClientRect();
+      const start = first.getBoundingClientRect();
+      const end = last.getBoundingClientRect();
+      const top = Math.max(0, Math.round(start.top + start.height / 2 - bounds.top));
+      const bottom = Math.max(0, Math.round(bounds.bottom - (end.top + end.height / 2)));
+      setSpineInset((current) =>
+        current.top === top && current.bottom === bottom ? current : { top, bottom },
+      );
+    }
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(track);
+    observer.observe(first);
+    observer.observe(last);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [board.slots, status]);
 
   if (status === 'context' && educationId in POST_SUCCESS_CONTEXT) {
     return <ChainContextScreen screenId={educationId} onContinue={finish} />;
@@ -390,6 +461,8 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
             'Para pegar um cartão, pressione Espaço ou Enter. Use as setas para mover, Espaço para soltar e Escape para cancelar.',
         },
       }}
+      onDragPending={handleDragPending}
+      onDragAbort={handleDragAbort}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -407,11 +480,11 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
         />
       ) : null}
       <div
-        className="app-shell-chain bg-noite text-ink"
+        className="app-shell-chain flex flex-col bg-noite text-ink"
         aria-hidden={isSuccess || undefined}
         {...(isSuccess ? ({ inert: '' } as { inert: string }) : {})}
       >
-        <div className="mx-auto flex w-full max-w-content flex-col gap-2 md:gap-4 lg:gap-5 xl:gap-6">
+        <div className="mx-auto flex min-h-0 w-full max-w-content flex-1 flex-col gap-2 md:gap-4 lg:gap-5 xl:gap-6">
           <ProgressRail
             current={phase === 1 ? connection - 1 : connection + 1}
             phase={phase}
@@ -419,7 +492,7 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
           />
 
           {screen.prompt ? (
-            <p className="text-center font-body text-body text-ink">{screen.prompt}</p>
+            <p className="shrink-0 text-center font-body text-body text-ink">{screen.prompt}</p>
           ) : null}
 
           <EquationHeader
@@ -430,50 +503,71 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
             focusOnMount
           />
 
-          <div className="grid gap-2 md:gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-5 xl:gap-8">
-            <div className="lg:col-start-2 lg:row-start-1">
-              <CardTray isOver={overDest === 'tray'} onReturn={handleReturnToTray}>
-                {board.tray.map((cardId) => {
-                  const step = stepsById.get(cardId);
-                  if (!step) return null;
-                  return (
-                    <div
-                      key={cardId}
-                      className="h-full min-w-[min(78%,16rem)] shrink-0 snap-start overflow-hidden md:h-auto md:min-w-0 md:overflow-visible"
-                    >
-                      <ChainCard
-                        step={step}
-                        disabled={isSuccess}
-                        isLocked={lockedIds.has(step.id)}
-                        isSelected={selectedId === step.id}
-                        isError={errorIds.includes(step.id)}
-                        onSelect={() => handleSelect(step.id)}
-                      />
-                    </div>
-                  );
-                })}
-              </CardTray>
-            </div>
+          {screen.id === 'perio-to-dpoc' ? (
+            <p
+              className="hidden shrink-0 text-center text-ink-muted [@media(pointer:coarse)]:block"
+              style={{ fontSize: 'var(--type-caption)', lineHeight: 1.45 }}
+            >
+              Toque em uma etapa e depois na posição
+            </p>
+          ) : null}
+
+          <div className="grid min-h-0 min-w-0 w-full flex-1 grid-rows-[auto_minmax(0,1fr)] gap-2 md:gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:grid-rows-1 lg:gap-5 xl:gap-8">
+            {showTray ? (
+              <div className="min-w-0 w-full lg:col-start-2 lg:row-start-1">
+                <CardTray isOver={overDest === 'tray'} onReturn={handleReturnToTray}>
+                  {board.tray.map((cardId) => {
+                    const step = stepsById.get(cardId);
+                    if (!step) return null;
+                    return (
+                      <div key={cardId} className="min-w-0">
+                        <ChainCard
+                          step={step}
+                          location="tray"
+                          disabled={isSuccess}
+                          isLocked={lockedIds.has(step.id)}
+                          isSelected={selectedId === step.id}
+                          isHeld={pendingId === step.id}
+                          isError={errorIds.includes(step.id)}
+                          onSelect={() => handleSelect(step.id)}
+                        />
+                      </div>
+                    );
+                  })}
+                </CardTray>
+              </div>
+            ) : null}
 
             <section
               className={[
-                'relative rounded-md border border-line bg-tecido p-2 md:p-4 lg:col-start-1 lg:row-start-1 lg:p-5',
+                'relative flex min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-md border border-line bg-tecido p-2 md:p-4 lg:col-start-1 lg:row-start-1 lg:p-5',
                 shaking ? 'animate-chain-shake' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
               aria-label="A corrente"
             >
-              <h2 className="mb-1 font-mono text-caption uppercase text-ink-muted md:mb-4">A corrente</h2>
-              <div className="relative pl-6 md:pl-8">
-                <ChainSpine filled={isSuccess} reducedMotion={reducedMotion} />
-                <ol className="flex list-none flex-col gap-1 p-0 md:gap-3">
+              <h2 className="mb-1 shrink-0 font-mono text-caption uppercase text-ink-muted md:mb-4">A corrente</h2>
+              <div
+                ref={trackRef}
+                className="relative grid min-h-0 grid-cols-[1.25rem_minmax(0,1fr)] overflow-hidden"
+              >
+                <ChainSpine
+                  filled={isSuccess}
+                  reducedMotion={reducedMotion}
+                  top={spineInset.top}
+                  bottom={spineInset.bottom}
+                />
+                <ol className="col-start-2 flex list-none flex-col gap-4 p-0">
                   {board.slots.map((cardId, index) => {
                     const step = cardId ? stepsById.get(cardId) : undefined;
                     const locked = Boolean(step && lockedIds.has(step.id));
                     const highlighted = isSuccess && index < cascadeCount;
                     return (
-                      <li key={`slot-${index}`}>
+                      <li
+                        key={`slot-${index}`}
+                        ref={index === 0 ? firstSlotRef : index === SLOT_COUNT - 1 ? lastSlotRef : undefined}
+                      >
                         <ChainSlot
                           index={index}
                           isEmpty={!step}
@@ -486,10 +580,12 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
                           {step ? (
                             <ChainCard
                               step={step}
+                              location="slot"
                               slotNumber={index + 1}
                               disabled={isSuccess}
                               isLocked={locked}
                               isSelected={selectedId === step.id}
+                              isHeld={pendingId === step.id}
                               isCorrect={locked}
                               isError={errorIds.includes(step.id)}
                               isSuccess={highlighted}
@@ -506,8 +602,9 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
             </section>
           </div>
 
-          <div className="flex flex-col items-center gap-2 md:gap-3">
+          <div className="mt-auto flex shrink-0 flex-col items-center gap-2 md:gap-3">
             <Button
+              variant="ready"
               disabled={!filled || isSuccess}
               pulseOnce={hasPulsed && filled && !isSuccess && !reducedMotion}
               onClick={handleVerify}

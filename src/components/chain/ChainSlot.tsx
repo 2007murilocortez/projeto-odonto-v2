@@ -36,7 +36,8 @@ export function ChainSlot({
       aria-label={ariaLabel}
       onClick={onPlace}
       className={[
-        'relative min-h-11 rounded-md border border-dashed p-1 transition-colors md:min-h-[72px]',
+        'relative min-h-11 w-full rounded-md border border-dashed transition-colors md:min-h-[72px]',
+        isEmpty ? 'p-1' : 'p-0',
         isRefused ? 'animate-refuse-pulse' : '',
         isOver && isLocked
           ? 'border-line bg-tecido'
