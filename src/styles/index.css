@@ -1,0 +1,216 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background-color: var(--noite);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--type-body);
+    line-height: var(--leading-card);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--placa);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  @keyframes question-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.06);
+    }
+  }
+
+  @keyframes chain-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    16.6% {
+      transform: translateX(-6px);
+    }
+    33.3% {
+      transform: translateX(6px);
+    }
+    50% {
+      transform: translateX(-6px);
+    }
+    66.6% {
+      transform: translateX(6px);
+    }
+    83.3% {
+      transform: translateX(-6px);
+    }
+  }
+
+  @keyframes error-flash {
+    0%,
+    100% {
+      border-color: var(--line);
+    }
+    40% {
+      border-color: var(--inflamacao);
+    }
+  }
+
+  @keyframes verify-once {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes success-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-question-pulse {
+    animation: question-pulse 2.4s ease-in-out infinite;
+  }
+
+  .animate-chain-shake {
+    animation: chain-shake 320ms var(--ease-out);
+  }
+
+  .animate-error-flash {
+    animation: error-flash 600ms var(--ease-out);
+  }
+
+  .animate-verify-once {
+    animation: verify-once 900ms var(--ease-out) 1;
+  }
+
+  .animate-success-in {
+    animation: success-in 400ms var(--ease-out) both;
+  }
+
+  @keyframes refuse-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      box-shadow: 0 0 0 2px var(--line);
+    }
+  }
+
+  @keyframes success-fade {
+    from {
+      border-color: var(--line);
+      background-color: var(--tecido);
+    }
+    to {
+      border-color: var(--oxigenio);
+      background-color: color-mix(in srgb, var(--tecido) 96%, white);
+    }
+  }
+
+  .animate-refuse-pulse {
+    animation: refuse-pulse 400ms var(--ease-out) 1;
+    border-color: var(--line);
+  }
+
+  .animate-success-fade {
+    animation: success-fade 200ms var(--ease-out) both;
+  }
+
+  @keyframes halo-pulse {
+    0%,
+    100% {
+      opacity: 0.18;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(1.08);
+    }
+  }
+
+  .animate-halo-pulse {
+    transform-origin: center;
+    animation: halo-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes particle-travel {
+    from {
+      offset-distance: 0%;
+      fill: var(--inflamacao);
+    }
+    to {
+      offset-distance: 100%;
+      fill: var(--oxigenio);
+    }
+  }
+
+  @keyframes particle-loop {
+    from {
+      offset-distance: 0%;
+    }
+    to {
+      offset-distance: 100%;
+    }
+  }
+
+  .particle-travel {
+    animation: particle-travel 550ms var(--ease-out) forwards;
+  }
+
+  .particle-loop {
+    animation: particle-loop 4.8s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-question-pulse,
+    .animate-chain-shake,
+    .animate-error-flash,
+    .animate-verify-once,
+    .animate-success-in,
+    .animate-refuse-pulse,
+    .animate-halo-pulse,
+    .particle-travel,
+    .particle-loop {
+      animation: none;
+    }
+
+    .animate-refuse-pulse {
+      box-shadow: 0 0 0 2px var(--line);
+    }
+
+    .animate-success-fade {
+      animation: success-fade 200ms var(--ease-out) both;
+    }
+  }
+}

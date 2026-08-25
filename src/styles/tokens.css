@@ -1,0 +1,68 @@
+:root {
+  /* superfícies — seção 9.2 */
+  --noite:        #08131F;  /* fundo da página */
+  --tecido:       #102434;  /* cartões, painéis */
+  --tecido-alto:  #17324A;  /* hover, slot ativo */
+  --line:         #22415A;  /* bordas, divisores */
+
+  /* texto */
+  --ink:          #E9F1F5;
+  --ink-muted:    #8FA9B8;
+  /* 4,50:1 sobre --line. Só texto de botão desabilitado; não usar sobre outros fundos. */
+  --ink-disabled: #92ABC8;
+
+  /* semânticos */
+  --oxigenio:     #48D0C4;  /* acerto, oxigenação, progresso */
+  --oxigenio-dim: #2A7D77;
+  --inflamacao:   #E8594D;  /* erro, inflamação, origem */
+  --placa:        #F0B429;  /* atenção, o "?", dicas */
+
+  /* efeitos */
+  --shadow-lift:  0 14px 34px -10px rgba(0, 0, 0, 0.65);
+  --ease-out:     cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* overlay da PathwayAnimation (seção 8) */
+  --backdrop:     rgba(6, 15, 24, 0.82);
+
+  /* fontes — seção 9.3 + fallbacks da seção 11 */
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+  /* escala tipográfica — seção 9.3 */
+  --type-display-lg: clamp(2rem, 4.5vw, 3.25rem);  /* line-height 1.05, wght 600, tracking -0.02em */
+  --type-display:    clamp(1.5rem, 3vw, 2rem);
+  --type-equation:   clamp(1.05rem, 2.2vw, 1.6rem); /* uppercase, tracking 0.06em */
+  --type-card:       1rem;                          /* line-height 1.45 */
+  --type-body:       1.0625rem;
+  --type-caption:    0.8125rem;                     /* uppercase, tracking 0.09em, mono */
+
+  --leading-display: 1.05;
+  --leading-card:    1.45;
+  --tracking-display: -0.02em;
+  --tracking-equation: 0.06em;
+  --tracking-caption: 0.09em;
+  --weight-display:  600;
+  --weight-button:   550;
+
+  /* espaçamento — múltiplos de 4px, --space-1 a --space-12 */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  32px;
+  --space-9:  36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+
+  /* raios — seção 6.4 / 9.4 */
+  --radius-md: 10px;
+
+  /* largura máxima do layout de cadeia — seção 6.1 */
+  --content-max: 1120px;
+}
