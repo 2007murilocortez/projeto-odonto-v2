@@ -60,6 +60,10 @@ describe('countCorrectPositions', () => {
     expect(countCorrectPositions(['s1', 's2', 's3', 's4'], ORDER_BY_ID)).toBe(4);
     expect(countCorrectPositions(['s4', 's3', 's2', 's1'], ORDER_BY_ID)).toBe(0);
   });
+
+  it('AOS→Periodontite na ordem da captura (Estresse, Apneia, Ambiente, Hipóxia) conta 0', () => {
+    expect(countCorrectPositions(['s3', 's1', 's4', 's2'], ORDER_BY_ID)).toBe(0);
+  });
 });
 
 describe('shuffleSteps', () => {

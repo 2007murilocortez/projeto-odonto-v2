@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary';
+type ButtonVariant = 'primary' | 'secondary' | 'ready';
 
 type ButtonProps = {
   variant?: ButtonVariant;
@@ -24,11 +24,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const isDisabled = Boolean(disabled);
 
   const variantClass =
-    variant === 'primary'
-      ? isDisabled
-        ? 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-line text-ink-disabled cursor-not-allowed'
-        : 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-oxigenio text-noite'
-      : 'inline-flex min-h-11 min-w-11 items-center justify-center bg-transparent px-3 py-0 text-ink-muted hover:underline';
+    variant === 'secondary'
+      ? 'inline-flex min-h-11 min-w-11 items-center justify-center bg-transparent px-3 py-0 text-ink-muted hover:underline'
+      : variant === 'ready'
+        ? isDisabled
+          ? 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-line text-ink-disabled cursor-not-allowed'
+          : 'inline-flex min-h-11 items-center justify-center rounded-md border border-line px-5 py-3 bg-tecido-alto text-ink'
+        : isDisabled
+          ? 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-line text-ink-disabled cursor-not-allowed'
+          : 'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 bg-oxigenio text-noite';
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
     if (isDisabled) {

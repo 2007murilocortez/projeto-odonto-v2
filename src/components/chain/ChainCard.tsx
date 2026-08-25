@@ -1,14 +1,17 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Check, GripVertical } from 'lucide-react';
-import type { MouseEvent } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
+import { useCoarsePointer } from '../../hooks/useCoarsePointer';
 import type { ChainStep } from '../../types/game';
 
 type ChainCardProps = {
   step: ChainStep;
   slotNumber?: number;
+  location?: 'tray' | 'slot';
   disabled?: boolean;
   isLocked?: boolean;
   isSelected?: boolean;
+  isHeld?: boolean;
   isOverlay?: boolean;
   isCorrect?: boolean;
   isError?: boolean;
@@ -20,9 +23,11 @@ type ChainCardProps = {
 export function ChainCard({
   step,
   slotNumber,
+  location = 'tray',
   disabled = false,
   isLocked = false,
   isSelected = false,
+  isHeld = false,
   isOverlay = false,
   isCorrect = false,
   isError = false,
@@ -30,14 +35,16 @@ export function ChainCard({
   reducedMotion = false,
   onSelect,
 }: ChainCardProps) {
+  const coarse = useCoarsePointer();
+  const dragDisabled = disabled || isOverlay || isLocked || (coarse && location === 'tray');
   const draggableId = isOverlay ? `${step.id}-overlay` : step.id;
   const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({
     id: draggableId,
-    disabled: disabled || isOverlay || isLocked,
+    disabled: dragDisabled,
   });
   const { setNodeRef: setDropRef } = useDroppable({
     id: draggableId,
-    disabled: disabled || isOverlay || isLocked,
+    disabled: dragDisabled,
   });
 
   function setNodeRef(node: HTMLElement | null) {
@@ -47,6 +54,7 @@ export function ChainCard({
 
   const dragging = isOverlay || isDragging;
   const inactive = disabled || isLocked;
+  const touchPanLocked = location === 'slot' && !dragDisabled;
 
   function handleClick(event: MouseEvent<HTMLDivElement>) {
     event.stopPropagation();
@@ -55,19 +63,21 @@ export function ChainCard({
   }
 
   const className = [
-    'flex w-full min-h-11 items-center gap-2 rounded-md border px-3 py-2 text-left font-body text-card md:min-h-[72px] md:items-start md:gap-3 md:px-4 md:py-4',
+    'flex w-full min-h-11 items-start gap-2 rounded-md border px-3 py-2 text-left font-body text-card md:min-h-[72px] md:gap-3 md:px-4 md:py-4',
+    touchPanLocked ? 'touch-none' : '',
     'select-none',
     isSuccess
       ? 'border-oxigenio'
       : isCorrect || isLocked
         ? 'border-oxigenio-dim'
-        : isSelected
+        : isSelected || isHeld
           ? 'border-placa'
           : 'border-line',
     isSuccess && reducedMotion ? 'animate-success-fade' : '',
     isError ? 'animate-error-flash' : '',
     dragging ? 'scale-[1.03] -rotate-[1.2deg] cursor-grabbing opacity-95 shadow-lift' : '',
-    !dragging && !inactive ? 'hover:-translate-y-[2px] hover:border-oxigenio-dim' : '',
+    isHeld && !dragging ? 'scale-[1.02]' : '',
+    !dragging && !inactive && !isHeld ? 'hover:-translate-y-[2px] hover:border-oxigenio-dim' : '',
     inactive ? 'cursor-default' : 'cursor-grab',
   ]
     .filter(Boolean)
@@ -75,7 +85,7 @@ export function ChainCard({
 
   const backgroundColor = isSuccess
     ? 'color-mix(in srgb, var(--tecido) 96%, white)'
-    : isSelected
+    : isSelected || isHeld
       ? 'var(--tecido-alto)'
       : 'var(--tecido)';
 
@@ -99,6 +109,14 @@ export function ChainCard({
     </>
   );
 
+  const touchStyle: CSSProperties = touchPanLocked
+    ? {
+        touchAction: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+      }
+    : {};
+
   if (isOverlay) {
     return (
       <div className={className} style={{ backgroundColor }}>
@@ -110,10 +128,14 @@ export function ChainCard({
   return (
     <div
       ref={setNodeRef}
-      style={{ backgroundColor, opacity: isDragging ? 0.35 : 1 }}
+      style={{
+        backgroundColor,
+        opacity: isDragging ? 0.35 : 1,
+        ...touchStyle,
+      }}
       className={className}
       onClick={handleClick}
-      {...listeners}
+      {...(dragDisabled ? {} : listeners)}
       {...attributes}
       tabIndex={inactive ? -1 : 0}
       aria-disabled={inactive}
