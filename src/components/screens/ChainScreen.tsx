@@ -9,7 +9,7 @@ import {
 } from '@dnd-kit/core';
 import type { Announcements, DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import { chainKeyboardCoordinates } from '../../utils/chainKeyboardCoordinates';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import type { ChainScreen as ChainScreenContent, ChainStep } from '../../types/game';
 import {
@@ -22,7 +22,9 @@ import {
   type Board,
 } from '../../utils/board';
 import { createRng, shuffleSteps } from '../../utils/shuffle';
+import { POST_SUCCESS_CONTEXT, type ChainEducationId } from '../../data/education';
 import { Button } from '../ui/Button';
+import { AnchoredPopover } from '../ui/AnchoredPopover';
 import { Toast } from '../ui/Toast';
 import { ProgressRail } from '../ui/ProgressRail';
 import { CardTray } from '../chain/CardTray';
@@ -31,6 +33,7 @@ import { ChainSlot } from '../chain/ChainSlot';
 import { ChainSpine } from '../chain/ChainSpine';
 import { EquationHeader } from '../chain/EquationHeader';
 import { PathwayAnimation } from '../anatomy/PathwayAnimation';
+import { ChainContextScreen } from './ChainContextScreen';
 
 type ChainScreenProps = {
   screen: ChainScreenContent;
@@ -83,7 +86,7 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
   const [lockedIds, setLockedIds] = useState<Set<string>>(() => new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
-  const [status, setStatus] = useState<'playing' | 'success'>('playing');
+  const [status, setStatus] = useState<'playing' | 'success' | 'context'>('playing');
   const [cascadeCount, setCascadeCount] = useState(0);
   const [shaking, setShaking] = useState(false);
   const [errorIds, setErrorIds] = useState<string[]>([]);
@@ -96,6 +99,8 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
   const [dndEpoch, setDndEpoch] = useState(0);
   const [liveMessage, setLiveMessage] = useState('');
   const [refusedSlot, setRefusedSlot] = useState<number | null>(null);
+  const hintButtonRef = useRef<HTMLButtonElement>(null);
+  const hintPanelId = useId();
 
   const boardRef = useRef(board);
   const lockedRef = useRef(lockedIds);
@@ -190,12 +195,16 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
     onCompleteRef.current();
   }, []);
 
+  const openContext = useCallback(() => {
+    setStatus('context');
+  }, []);
+
   useEffect(() => {
-    if (!isSuccess || reducedMotion || manualAdvance) return;
+    if (status !== 'success' || reducedMotion || manualAdvance) return undefined;
     const delay = screen.reveal ? 2500 : 1800;
-    const timeoutId = window.setTimeout(() => finish(), delay);
+    const timeoutId = window.setTimeout(() => openContext(), delay);
     return () => window.clearTimeout(timeoutId);
-  }, [isSuccess, reducedMotion, manualAdvance, screen.reveal, finish]);
+  }, [status, reducedMotion, manualAdvance, screen.reveal, openContext]);
 
   useEffect(() => {
     if (errorIds.length === 0) return;
@@ -339,21 +348,35 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
 
   function handleHint() {
     if (attempts < 2 || isSuccess) return;
-    if (frozenHint) {
-      setHintVisible(true);
+    if (hintVisible) {
+      setHintVisible(false);
       return;
     }
-    const step = firstOutOfPlace(screen, board, lockedIds);
-    if (!step?.hint) return;
-    setFrozenHint(step);
+    if (!frozenHint) {
+      const step = firstOutOfPlace(screen, board, lockedIds);
+      if (!step?.hint) return;
+      setFrozenHint(step);
+      setLiveMessage(`Dica: ${step.hint}`);
+    } else {
+      setLiveMessage(`Dica: ${frozenHint.hint}`);
+    }
     setHintVisible(true);
-    setLiveMessage(`Dica: ${step.hint}`);
+  }
+
+  function closeHint() {
+    setHintVisible(false);
+    hintButtonRef.current?.focus();
   }
 
   const overDest = overId ? resolveDestination(overId, board) : null;
   const activeStep = activeId ? stepsById.get(activeId) : undefined;
   const showHintLink = attempts >= 2 && !isSuccess;
   const hintText = hintVisible && frozenHint?.hint ? frozenHint.hint : null;
+  const educationId = screen.id as ChainEducationId;
+
+  if (status === 'context' && educationId in POST_SUCCESS_CONTEXT) {
+    return <ChainContextScreen screenId={educationId} onContinue={finish} />;
+  }
 
   return (
     <DndContext
@@ -379,16 +402,16 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
           reveal={screen.reveal}
           reducedMotion={reducedMotion}
           showAdvance={reducedMotion || manualAdvance}
-          onComplete={finish}
+          onComplete={openContext}
           onInterrupt={() => setManualAdvance(true)}
         />
       ) : null}
       <div
-        className="min-h-svh bg-noite px-4 py-6 text-ink lg:px-8 lg:py-8"
+        className="app-shell-chain bg-noite text-ink"
         aria-hidden={isSuccess || undefined}
         {...(isSuccess ? ({ inert: '' } as { inert: string }) : {})}
       >
-        <div className="mx-auto flex w-full max-w-content flex-col gap-6">
+        <div className="mx-auto flex w-full max-w-content flex-col gap-2 md:gap-4 lg:gap-5 xl:gap-6">
           <ProgressRail
             current={phase === 1 ? connection - 1 : connection + 1}
             phase={phase}
@@ -407,14 +430,17 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
             focusOnMount
           />
 
-          <div className="grid gap-6 xl:gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+          <div className="grid gap-2 md:gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-5 xl:gap-8">
             <div className="lg:col-start-2 lg:row-start-1">
               <CardTray isOver={overDest === 'tray'} onReturn={handleReturnToTray}>
                 {board.tray.map((cardId) => {
                   const step = stepsById.get(cardId);
                   if (!step) return null;
                   return (
-                    <div key={cardId} className="min-w-[min(100%,18rem)] shrink-0 md:min-w-0">
+                    <div
+                      key={cardId}
+                      className="h-full min-w-[min(78%,16rem)] shrink-0 snap-start overflow-hidden md:h-auto md:min-w-0 md:overflow-visible"
+                    >
                       <ChainCard
                         step={step}
                         disabled={isSuccess}
@@ -431,17 +457,17 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
 
             <section
               className={[
-                'relative rounded-md border border-line bg-tecido p-4 md:p-5 lg:col-start-1 lg:row-start-1',
+                'relative rounded-md border border-line bg-tecido p-2 md:p-4 lg:col-start-1 lg:row-start-1 lg:p-5',
                 shaking ? 'animate-chain-shake' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
               aria-label="A corrente"
             >
-              <h2 className="mb-4 font-mono text-caption uppercase text-ink-muted">A corrente</h2>
-              <div className="relative pl-8">
+              <h2 className="mb-1 font-mono text-caption uppercase text-ink-muted md:mb-4">A corrente</h2>
+              <div className="relative pl-6 md:pl-8">
                 <ChainSpine filled={isSuccess} reducedMotion={reducedMotion} />
-                <ol className="flex list-none flex-col gap-3 p-0">
+                <ol className="flex list-none flex-col gap-1 p-0 md:gap-3">
                   {board.slots.map((cardId, index) => {
                     const step = cardId ? stepsById.get(cardId) : undefined;
                     const locked = Boolean(step && lockedIds.has(step.id));
@@ -480,7 +506,7 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
             </section>
           </div>
 
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2 md:gap-3">
             <Button
               disabled={!filled || isSuccess}
               pulseOnce={hasPulsed && filled && !isSuccess && !reducedMotion}
@@ -490,19 +516,27 @@ export function ChainScreen({ screen, onComplete, onAttempt }: ChainScreenProps)
             </Button>
 
             {showHintLink ? (
-              <Button variant="secondary" onClick={handleHint}>
+              <Button
+                ref={hintButtonRef}
+                variant="secondary"
+                aria-expanded={Boolean(hintText)}
+                aria-controls={hintText ? hintPanelId : undefined}
+                aria-haspopup="dialog"
+                onClick={handleHint}
+              >
                 Ver dica
               </Button>
             ) : null}
 
             {hintText ? (
-              <p
-                role="status"
-                className="max-w-xl text-center text-placa"
-                style={{ fontSize: 'var(--type-caption)', lineHeight: 1.45 }}
-              >
-                {hintText}
-              </p>
+              <AnchoredPopover
+                id={hintPanelId}
+                text={hintText}
+                anchorRef={hintButtonRef}
+                onClose={closeHint}
+                label="Dica"
+                tone="hint"
+              />
             ) : null}
           </div>
         </div>
