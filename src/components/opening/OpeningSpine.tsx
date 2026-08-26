@@ -17,7 +17,7 @@ export function OpeningSpine({ reducedMotion }: OpeningSpineProps) {
   }, [reducedMotion]);
 
   return (
-    <div className="relative h-full min-h-[14rem] w-full" aria-hidden>
+    <div className="relative row-span-2 h-full min-h-[14rem] w-full" aria-hidden>
       <div
         className="absolute bottom-0 left-1/2 top-0 w-[2px] bg-oxigenio"
         style={{

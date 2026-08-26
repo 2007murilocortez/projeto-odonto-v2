@@ -30,8 +30,11 @@ export type OpeningScreen = {
   title: string;
   subtitle: string;
   body: string;
-  /** Placeholders visíveis até o preenchimento acadêmico. */
-  affiliation: string;
+  affiliation: {
+    author: string;
+    course: string;
+    institution: string;
+  };
   cta: string;
 };
 

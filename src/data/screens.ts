@@ -13,8 +13,11 @@ export const openingScreen: OpeningScreen = {
   title: 'Doença periodontal × doenças respiratórias',
   subtitle: 'Aprenda na prática como a inflamação da boca conversa com o restante do corpo.',
   body: 'Você vai montar quatro cadeias de eventos. Em cada uma, arraste as etapas até formar o caminho correto.',
-  // Preencher os placeholders; a abertura renderiza a string como está.
-  affiliation: '{{DISCIPLINA}} · {{INSTITUIÇÃO}} · {{AUTORA}}',
+  affiliation: {
+    author: 'Maria Clara Landi',
+    course: 'Práticas Odontológicas Assistenciais\u00A0III',
+    institution: 'FACENS',
+  },
   cta: 'Começar',
 };
 
